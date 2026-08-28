@@ -1,0 +1,327 @@
+:root {
+	color-scheme: light dark;
+
+	--bg: light-dark(#f4f1ea, #14140f);
+	--fg: light-dark(#1a1a1a, #e8e4d8);
+	--muted: light-dark(#5f5f57, #9a9a8e);
+	--rule: light-dark(#cfc9bc, #38382f);
+
+	--mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	padding-block: 2rem 4rem;
+	padding-inline: clamp(1rem, 4vw, 1.25rem);
+	background: var(--bg);
+	color: var(--fg);
+	font: 13px/1.5 var(--mono);
+}
+
+main {
+	container: board / inline-size;
+	max-inline-size: 46rem;
+	margin-inline: auto;
+}
+
+h1 {
+	margin-block: 0 0.5rem;
+	font-size: 16px;
+	text-transform: lowercase;
+}
+
+.lede {
+	margin-block: 0 0.75rem;
+	max-inline-size: 34rem;
+	color: var(--muted);
+	text-wrap: pretty;
+}
+
+.meta,
+.count,
+.legend {
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.meta {
+	margin-block: 0 1.5rem;
+}
+
+.message {
+	margin-block: 2rem;
+	color: var(--muted);
+
+	&.error {
+		color: var(--fg);
+	}
+}
+
+/* ─── controls ───────────────────────────────────────────────────────────── */
+
+.controls {
+	display: block;
+	margin-block-end: 1rem;
+}
+
+.control {
+	margin-block: 0.35rem;
+
+	& label,
+	& > span:first-child {
+		color: var(--muted);
+	}
+}
+
+input[type="search"] {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	border-block-end: 1px solid var(--rule);
+	padding-block: 2px;
+	min-inline-size: 12rem;
+}
+
+select {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 1px solid var(--rule);
+}
+
+/* Buttons that read as plain text. */
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	padding: 0;
+	text-align: start;
+	cursor: pointer;
+
+	&:disabled {
+		color: var(--muted);
+		cursor: default;
+	}
+
+	&:hover:not(:disabled),
+	&.link {
+		text-decoration: underline;
+	}
+}
+
+.show-link[aria-pressed="true"] {
+	font-weight: 700;
+	text-decoration: underline;
+}
+
+:focus-visible {
+	outline: 2px solid var(--fg);
+	outline-offset: 2px;
+}
+
+.legend {
+	margin-block: 0.6rem 0;
+}
+
+.legend-line {
+	display: block;
+}
+
+.sort-mobile {
+	display: none;
+}
+
+/* ─── table ──────────────────────────────────────────────────────────────── */
+
+table {
+	inline-size: 100%;
+	margin-block-start: 1rem;
+	border-collapse: collapse;
+
+	/* Fixed layout + explicit widths, so columns are sized by the colgroup rather
+	   than by whichever rows happen to be on screen. Without this, switching
+	   between ranked / all / hosts resizes every column as the longest country
+	   changes. Widths are in ch, which is exact in a monospace face. */
+	table-layout: fixed;
+}
+
+col:nth-child(1) { inline-size: 6ch; }  /* rank      */
+col:nth-child(2) { inline-size: 11ch; } /* initials  */
+col:nth-child(3) { inline-size: 21ch; } /* country   */
+col:nth-child(4) { inline-size: 11ch; } /* win rate  */
+col:nth-child(5) { inline-size: 20ch; } /* status    */
+
+thead th {
+	padding: 2px 18px 6px 0;
+	font-weight: 400;
+	text-align: start;
+	color: var(--muted);
+	border-block-end: 1px solid var(--rule);
+	text-transform: lowercase;
+
+	&.sorted {
+		font-weight: 700;
+		color: var(--fg);
+	}
+}
+
+tbody td {
+	padding-block: 2px;
+	padding-inline: 0 18px;
+	vertical-align: top;
+
+	&.muted {
+		color: var(--muted);
+	}
+
+	/* Cells carrying a title tooltip. */
+	&.noted {
+		text-decoration: underline dotted var(--rule);
+		text-underline-offset: 3px;
+	}
+}
+
+tbody tr.host td {
+	color: var(--muted);
+}
+
+abbr.att {
+	margin-inline-start: 0.4ch;
+	color: var(--muted);
+	text-decoration: none;
+	cursor: help;
+}
+
+tr.host-note {
+	display: none;
+}
+
+/* ─── footer bits ────────────────────────────────────────────────────────── */
+
+.hint {
+	margin-block: 1rem 0;
+}
+
+/* Deliberately not muted — it is the only thing on screen when a filter comes
+   back empty, and it is the way out. */
+.hint-action {
+	color: var(--fg);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	padding-block: 6px;
+	min-block-size: 44px;
+}
+
+.pager {
+	display: flex;
+	gap: 0.75rem;
+	align-items: baseline;
+	margin-block-start: 1.25rem;
+}
+
+.pager-status {
+	color: var(--muted);
+}
+
+.count {
+	margin-block: 0.5rem 0;
+}
+
+.visually-hidden {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* ─── narrow: rows become stacked blocks ─────────────────────────────────── */
+
+/* Root type scale answers to the viewport; the table layout below answers to
+   the container it actually sits in. */
+@media (width < 560px) {
+	body {
+		font-size: 14px;
+	}
+}
+
+@container board (width < 520px) {
+	.sort-mobile {
+		display: block;
+	}
+
+	select {
+		min-block-size: 44px;
+		padding: 8px;
+	}
+
+	table,
+	thead,
+	tbody,
+	tr,
+	td {
+		display: block;
+		inline-size: 100%;
+	}
+
+	thead,
+	colgroup {
+		display: none;
+	}
+
+	tbody tr {
+		padding-block: 0.6rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	/* A host row is followed by its note row, which carries the rule instead. */
+	tbody tr.host {
+		border-block-end: none;
+		padding-block-end: 0;
+	}
+
+	tbody td {
+		padding-inline: 0;
+
+		&::before {
+			content: attr(data-label) ":\00a0";
+			color: var(--muted);
+		}
+
+		/* No hover here, so the dotted tooltip hint is meaningless. */
+		&.noted {
+			text-decoration: none;
+		}
+	}
+
+	tr.host-note {
+		display: block;
+		padding-block-end: 0.6rem;
+		border-block-end: 1px solid var(--rule);
+
+		& td {
+			padding-block-start: 0.3rem;
+			font-size: 12px;
+			color: var(--muted);
+
+			&::before {
+				content: "";
+			}
+		}
+	}
+
+	.show-link,
+	.pager button {
+		min-block-size: 44px;
+		padding-block: 6px;
+	}
+}
