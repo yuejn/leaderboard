@@ -5,7 +5,7 @@
   "scoreLabel": "win rate",
   "provisionalLegend": "provisional = fewer than 4 quizzes played",
   "hostedThreshold": 8,
-  "hostLabel": "Host",
+  "hostLabel": "host",
   "hostSeparator": " · ",
   "hostPlayingNote": "record from games played, not hosted",
   "quizmasterIds": [26],

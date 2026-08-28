@@ -28,7 +28,7 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 | `scoreLabel` | Column heading for the sheet's `Score` column |
 | `provisionalLegend` | First legend line under the filters |
 | `hostedThreshold` | `Hosted >= this` marks someone a host |
-| `hostLabel` | Appended to a host's status, e.g. `Ranked · Host` |
+| `hostLabel` | Appended to a host's status, e.g. `ranked · host` |
 | `hostSeparator` | What sits between the two, e.g. `" · "` |
 | `hostPlayingNote` | Tooltip on a host's rank and win rate |
 | `quizmasterIds` | Sheet `ID`s of the people who run the quiz, e.g. `[26]` |
@@ -92,7 +92,7 @@ row is greyed and the rank and win-rate cells carry a tooltip noting those
 figures are their playing record.
 
 Hosting is an *annotation on* their status, not a replacement for it — the
-status cell reads `Ranked · Host` or `Provisional · Host`. That matters: a host
+status cell reads `ranked · host` or `provisional · host`. That matters: a host
 can be ranked or provisional, and collapsing both to `host` made a ranked host
 and an unranked one look identical. They still appear under `ranked` /
 `provisional` according to their real status, and sort with their own group.
