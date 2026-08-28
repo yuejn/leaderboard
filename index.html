@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>leaderboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>games night leaderboard</h1>
+  <p class="lede">pls don't question the maths too much on this; i'm a history major</p>
+  <p class="meta" id="meta"></p>
+
+  <p class="message" id="message" role="status" aria-live="polite">loading&hellip;</p>
+
+  <search class="controls" id="controls" hidden>
+    <p class="control">
+      <label for="filter">filter:</label>
+      <input type="search" id="filter" autocomplete="off" spellcheck="false"
+             aria-label="filter by initials or country">
+    </p>
+    <p class="control">
+      <span id="show-label">show:</span>
+      <span class="show" id="show" role="group" aria-labelledby="show-label"></span>
+    </p>
+    <p class="control sort-mobile">
+      <label for="sort-select">sort by&hellip;</label>
+      <select id="sort-select"></select>
+    </p>
+    <p class="legend" id="legend"></p>
+  </search>
+
+  <table id="table" hidden>
+    <caption class="visually-hidden">Leaderboard standings</caption>
+    <colgroup><col><col><col><col><col></colgroup>
+    <thead id="thead">
+      <tr>
+        <th scope="col" data-key="rank"><button type="button">rank</button></th>
+        <th scope="col" data-key="initials"><button type="button">initials</button></th>
+        <th scope="col" data-key="country"><button type="button">country</button></th>
+        <th scope="col" data-key="score"><button type="button">win rate</button></th>
+        <th scope="col" data-key="status"><button type="button">status</button></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <p class="hint" id="hint" hidden></p>
+
+  <nav class="pager" id="pager" aria-label="pagination" hidden>
+    <button type="button" id="prev">&laquo; prev</button>
+    <span class="pager-status" id="pager-status"></span>
+    <button type="button" id="next">next &raquo;</button>
+  </nav>
+
+  <p class="count" id="count" aria-live="polite"></p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
