@@ -1,0 +1,19 @@
+{
+  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtpqOiO5Uwur1nlzUcBZJPP4EDn_Y6Z8hHG0qB95IFbg8fNPNdE0wpezbwWiyCZOJWkuFbMp-TDQXT/pub?gid=2026368046&single=true&output=csv",
+  "pageSize": 0,
+  "mobilePageSize": 20,
+  "scoreLabel": "win rate",
+  "provisionalLegend": "provisional = fewer than 4 quizzes played",
+  "hostedThreshold": 8,
+  "hostLabel": "Host",
+  "hostSeparator": " · ",
+  "hostPlayingNote": "record from games played, not hosted",
+  "quizmasterIds": [26],
+  "quizmasterLabel": "quiz master",
+  "attendance": {
+    "30%+": { "mark": "+", "title": "attends 30%+ of quizzes" },
+    "60%+": { "mark": "++", "title": "attends 60%+ of quizzes" }
+  },
+  "defaultShow": "all",
+  "defaultSort": { "key": "score", "dir": "desc" }
+}
