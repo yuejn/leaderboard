@@ -199,6 +199,14 @@ tbody tr.pinned td {
 	font-weight: 700;
 }
 
+/* A rule closes the pinned block, so a pinned row that the current `show:`
+   bucket excludes reads as deliberate rather than as a broken filter. Pinned
+   rows are contiguous, so only the last one has an unpinned row after it. */
+tbody tr.pinned:has(+ tr:not(.pinned)) td {
+	padding-block-end: 0.4rem;
+	border-block-end: 1px solid var(--rule);
+}
+
 /* Cells that are also controls: the name pins, the country filters. They should
    read as text until you go near them. */
 .pin,

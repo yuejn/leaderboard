@@ -27,6 +27,8 @@ const MATCHERS = {
 	hosts: (r) => r.isHost,
 };
 
+export const matchesShow = (row, show) => MATCHERS[show](row);
+
 export class AppError extends Error {
 	name = "AppError";
 }
@@ -258,29 +260,37 @@ export function makeCompare({ sortKey, sortDir, pinned }) {
  * callers are responsible for writing the clamped value back to their state.
  *
  * `pageSize: 0` turns pagination off and returns every matching row.
+ *
+ * Pins outrank the `show:` bucket but not the search box. A bucket is a view
+ * mode you set once and leave, so hiding your pinned people behind it defeats
+ * the point of pinning; the filter box is an active search, where a pinned row
+ * you didn't ask for is just noise.
  */
 export function selectRows(rows, state, { pageSize }) {
 	const query = state.query.trim().toLowerCase();
-	const matching = rows.filter((row) => MATCHERS[state.show](row) && matches(row, query));
-	const sorted = matching.toSorted(makeCompare(state));
+	const pinned = state.pinned ?? new Set();
 
-	if (!pageSize) {
-		return { rows: sorted, matching: sorted, total: sorted.length, pages: 1, page: 1, paged: false, query };
-	}
+	const searched = rows.filter((row) => matches(row, query));
+	const matching = searched.filter((row) => MATCHERS[state.show](row));
+	const offBucket = searched.filter((row) => pinned.has(row.id) && !MATCHERS[state.show](row));
 
-	const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
+	// Pinned rows sort to the front, so off-bucket ones land on the first page.
+	const shown = [...matching, ...offBucket].sort(makeCompare(state));
+
+	const view = {
+		matching, // bucket matches only — what `total` and the stats describe
+		total: matching.length,
+		pinnedExtra: offBucket.length,
+		query,
+	};
+
+	if (!pageSize) return { ...view, rows: shown, pages: 1, page: 1, paged: false };
+
+	const pages = Math.max(1, Math.ceil(shown.length / pageSize));
 	const page = Math.min(Math.max(state.page, 1), pages);
 	const start = (page - 1) * pageSize;
 
-	return {
-		rows: sorted.slice(start, start + pageSize),
-		matching: sorted, // every match, not just this page — the stats read from it
-		total: sorted.length,
-		pages,
-		page,
-		paged: true,
-		query,
-	};
+	return { ...view, rows: shown.slice(start, start + pageSize), pages, page, paged: true };
 }
 
 // ─── stats ───────────────────────────────────────────────────────────────────

@@ -156,13 +156,14 @@ function render() {
 	el.next.disabled = view.page >= view.pages;
 	el.pagerStatus.textContent = `page ${view.page}/${view.pages}`;
 
-	// Paginated: how much of the match is on screen. Unpaginated: how much of the
-	// sheet is in view at all — and nothing when that's all of it.
+	// Off-bucket pins are named separately rather than folded into the total, so
+	// the headline number still means "rows that match the current view".
+	const pins = view.pinnedExtra > 0 ? ` · ${view.pinnedExtra} pinned` : "";
 	el.count.textContent = view.paged
-		? `(showing ${view.rows.length} of ${view.total})`
-		: view.total === rows.length
+		? `(showing ${view.rows.length} of ${view.total}${pins})`
+		: view.total === rows.length && view.pinnedExtra === 0
 			? ""
-			: `(showing ${view.total} of ${rows.length})`;
+			: `(showing ${view.total} of ${rows.length}${pins})`;
 
 	for (const button of el.show.children) {
 		button.setAttribute("aria-pressed", String(button.value === state.show));
@@ -207,9 +208,10 @@ function renderRows(pageRows) {
 				h("td", { "data-label": "status" }, row.statusText),
 			);
 
-			// Narrow screens have no hover, so the host note gets its own line.
+			// Narrow screens have no hover, so the host note gets its own line. It
+			// inherits `pinned` so the pinned block stays contiguous for the divider.
 			return row.isHost
-				? [tr, h("tr", { class: "host-note", "aria-hidden": "true" },
+				? [tr, h("tr", { class: classes("host-note", pinned && "pinned"), "aria-hidden": "true" },
 						h("td", { colspan: COLUMNS.length }, cfg.hostPlayingNote))]
 				: [tr];
 		}),

@@ -120,6 +120,48 @@ changes.
 the legend. Deliberately not a column — too few rows have a value for one to pay
 its way.
 
+## Reading the page
+
+### Pinning
+
+Click anyone's initials to pin them. Pinned rows go bold and sort to the top
+through every sort and direction, so pinning two people puts them side by side
+for comparison. Pins live in the reader's own browser (`localStorage`) and
+survive reloads — they are never shared or stored anywhere else.
+
+Pins outrank the `show:` buttons but not the filter box:
+
+- **`ranked` / `all` / `provisional` / `hosts`** — a pinned row shows through a
+  bucket that excludes it. These are view modes you set once and leave, and
+  hiding your pinned people behind one defeats the point of pinning.
+- **`filter:`** — a pinned row must still match what you type. The filter box is
+  an active search; a pinned row you didn't ask for is just noise.
+
+A row shown only because it's pinned is separated from the rest by a hairline,
+and counted on its own (`showing 28 of 62 · 1 pinned`) so the headline number
+still means "rows matching this view".
+
+Pins are keyed on the sheet's `ID`, so reusing an ID for a different person
+inherits their pins.
+
+### Country links
+
+Every country is a filter link. Dual entries split into separate links, so
+`U.K. / Finland` gives a `U.K.` link *and* a `Finland` link — which is the only
+way some countries are reachable at all.
+
+### Stats
+
+The collapsed `stats` panel describes **what is currently on screen**, not the
+whole sheet, so filtering to one country shows that country's shape. It holds a
+summary line, a win-rate histogram in bands of ten, and players per country
+(each also a filter link).
+
+Counts only — no per-country averages. Most countries here have one or two
+players, so an average would be noise dressed up as a ranking. Note that someone
+recorded under two countries counts once for each, so the country counts total
+more than the number of players; the panel says so when that applies.
+
 ## Re-publishing the sheet
 
 `csvUrl` is a *publish-to-web* link, not a share link. It is tied to whichever
