@@ -1,0 +1,159 @@
+# leaderboard
+
+A single static page that reads a published Google Sheet and renders it as a
+sortable, filterable, paginated table. No build step, no dependencies, no
+backend — the browser fetches the CSV on every page load.
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `index.html` | Markup and element ids |
+| `style.css` | All styling |
+| `leaderboard.js` | Pure data layer — CSV parsing, ranking, filtering, sorting. No DOM |
+| `app.js` | DOM layer — fetching, rendering, controls, loading/error states |
+| `config.json` | **Every tunable value.** Edit this, not the code |
+| `.nojekyll` | Stops GitHub Pages running the files through Jekyll |
+
+## Changing things
+
+Everything adjustable lives in `config.json`. Edit it, commit, push — Pages
+redeploys and the change is live. Nothing below is duplicated in the JavaScript.
+
+| Key | What it does |
+| --- | --- |
+| `csvUrl` | The published-sheet CSV URL (see below) |
+| `pageSize` | Rows per page on the wide layout. **`0` = no pagination** |
+| `mobilePageSize` | Rows per page on the narrow layout. **`0` = no pagination** |
+| `scoreLabel` | Column heading for the sheet's `Score` column |
+| `provisionalLegend` | First legend line under the filters |
+| `hostedThreshold` | `Hosted >= this` marks someone a host |
+| `hostLabel` | Appended to a host's status, e.g. `Ranked · Host` |
+| `hostSeparator` | What sits between the two, e.g. `" · "` |
+| `hostPlayingNote` | Tooltip on a host's rank and win rate |
+| `quizmasterIds` | Sheet `ID`s of the people who run the quiz, e.g. `[26]` |
+| `quizmasterLabel` | What their status cell says instead of `Ranked`/`Provisional` |
+| `attendance` | Maps each `Attended` value to a `mark` and a `title` |
+| `defaultShow` | Which filter is active on load — `ranked`, `all`, `provisional`, `hosts` |
+| `defaultSort` | `{ "key": …, "dir": "asc" \| "desc" }` |
+
+A missing or malformed key shows an error naming it rather than failing
+silently.
+
+### Pagination
+
+Paging is decided by how wide the table is, not by the device. Below 520px each
+row becomes a five-line stacked block, so the full list turns into a very long
+scroll and `mobilePageSize` kicks in; above it the whole table fits on screen and
+`pageSize` is `0`, so every row is shown and the pager is hidden. Resizing across
+the breakpoint re-renders and returns to page 1.
+
+If the sheet grows past a few hundred entries, set `pageSize` to a number and the
+wide layout starts paging too.
+
+> The `520` breakpoint lives in two places that must agree: the `@container`
+> rule in `style.css` and `NARROW_WIDTH` in `app.js`.
+
+The page title, the description paragraph under it, and the column headings are
+plain text in `index.html`.
+
+## The sheet
+
+The page expects these column headers, matched **by name** — reordering columns
+in the sheet is safe, renaming them is not.
+
+| Column | Notes |
+| --- | --- |
+| `ID` | Stable integer per person. Never displayed; used as the sort tiebreaker |
+| `Initials` | Displayed as-is. A blank value marks the row as junk and drops it |
+| `Country` | Free text, shown exactly as written |
+| `Score` | e.g. `56%`. Blank or non-numeric sorts last and shows `—` |
+| `Status` | `Ranked` or `Provisional` |
+| `Hosted` | Integer count of quizzes hosted. Never displayed as a column |
+| `Attended` | Blank, `30%+`, or `60%+`. Never displayed as a column |
+
+`Initials`, `Country`, `Score` and `Status` are required. `ID`, `Hosted` and
+`Attended` are optional and default to sensible values if absent.
+
+### How ranking works
+
+Rank is computed over the whole sheet before any filtering, so the numbers never
+shift when you sort or filter.
+
+- Only `Ranked` rows with a numeric score are ranked.
+- **Competition ranking**: ties share a rank and the next rank skips — 1, 2, 2, 4.
+- `Provisional` rows show `—`.
+- Hosts are ranked normally; hosting doesn't remove anyone from the standings.
+
+### Hosts
+
+Anyone with `Hosted >= hostedThreshold` keeps their real rank and win rate. The
+row is greyed and the rank and win-rate cells carry a tooltip noting those
+figures are their playing record.
+
+Hosting is an *annotation on* their status, not a replacement for it — the
+status cell reads `Ranked · Host` or `Provisional · Host`. That matters: a host
+can be ranked or provisional, and collapsing both to `host` made a ranked host
+and an unranked one look identical. They still appear under `ranked` /
+`provisional` according to their real status, and sort with their own group.
+
+### Quizmasters
+
+Anyone whose sheet `ID` appears in `quizmasterIds` shows `quiz master` in the
+status cell, with no `Ranked`/`Provisional` at all. They're running the quiz
+rather than competing in it, and `Status` describes *games played* — so it would
+label the person with the deepest involvement a "provisional" newcomer, which is
+exactly backwards.
+
+They are still treated as a host in every other respect (greyed row, tooltip,
+included in `show: hosts`), and they still rank normally if their sheet status
+is `Ranked`.
+
+Identifying them by `ID` rather than by a hosted-count threshold is deliberate:
+with only a couple of hosts, any threshold is guesswork, and someone hosting one
+more quiz shouldn't silently promote them. Add or remove `ID`s as the role
+changes.
+
+### Attendance
+
+`30%+` and `60%+` render as a small `+` / `++` after the initials, explained in
+the legend. Deliberately not a column — too few rows have a value for one to pay
+its way.
+
+## Re-publishing the sheet
+
+`csvUrl` is a *publish-to-web* link, not a share link. It is tied to whichever
+Google account published it, and it breaks if that publish is revoked or the tab
+is deleted. To reissue one:
+
+1. Open the sheet → **File → Share → Publish to web**
+2. Pick the tab, choose **Comma-separated values (.csv)**, publish
+3. Copy the URL and paste it into `config.json` as `csvUrl`
+
+> **Owner:** _TODO — record which Google account owns this sheet, so the next
+> person knows where to go when the link stops working._
+
+The sheet must stay published for the page to work. If it isn't, the page says
+so rather than showing a blank table. There is no cached fallback: if the sheet
+is unreachable, the page shows an error and a retry link. That is deliberate.
+
+## Deploying
+
+**Settings → Pages → Deploy from branch → `main` / root.** Pushing to `main` is
+the deploy.
+
+## Running it locally
+
+The page fetches `config.json` and uses ES modules, so opening `index.html`
+straight off disk won't work — it needs to be served over HTTP:
+
+```sh
+python3 -m http.server 8000
+# then visit http://localhost:8000
+```
+
+## Browser support
+
+Uses `light-dark()`, container queries, CSS nesting, ES modules and
+`Array.prototype.toSorted` — all available in current Chrome, Safari, Firefox
+and Edge. Colours follow the reader's light/dark preference automatically.
