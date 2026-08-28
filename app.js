@@ -3,15 +3,19 @@ import {
 	COLUMNS,
 	SHOW_VALUES,
 	SORTS,
+	countryCounts,
 	parseRows,
 	matches,
+	scoreBands,
 	selectRows,
+	summarise,
 	validateConfig,
 } from "./leaderboard.js";
 
 const CONFIG_URL = "./config.json";
 const FILTER_DEBOUNCE_MS = 150;
 const FETCH_TIMEOUT_MS = 15_000;
+const PINS_KEY = "leaderboard:pins";
 
 /** Must match the `@container board (width < …)` breakpoint in style.css. */
 const NARROW_WIDTH = 520;
@@ -23,13 +27,35 @@ const el = Object.fromEntries(
 	[
 		"meta", "message", "controls", "filter", "show", "legend", "table", "thead",
 		"tbody", "hint", "pager", "prev", "next", "pager-status", "count", "sort-select",
+		"pins", "stats", "stats-summary", "histogram", "stats-countries", "stats-note",
 	].map((id) => [id.replace(/-(\w)/g, (_, c) => c.toUpperCase()), document.getElementById(id)]),
 );
 
 let cfg = null;
 let rows = [];
 let built = false;
-const state = { sortKey: "score", sortDir: "desc", show: "all", query: "", page: 1 };
+const state = {
+	sortKey: "score", sortDir: "desc", show: "all", query: "", page: 1,
+	pinned: loadPins(),
+};
+
+// Pins are a per-visitor convenience, so they live in the browser. Every access
+// is guarded: storage throws outright in some privacy modes.
+function loadPins() {
+	try {
+		return new Set(JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]"));
+	} catch {
+		return new Set();
+	}
+}
+
+function savePins() {
+	try {
+		localStorage.setItem(PINS_KEY, JSON.stringify([...state.pinned]));
+	} catch {
+		/* pins just won't survive a reload */
+	}
+}
 
 // ─── boot ────────────────────────────────────────────────────────────────────
 
@@ -122,6 +148,8 @@ function render() {
 
 	renderRows(view.rows);
 	renderHint(view);
+	renderPins();
+	renderStats(view);
 
 	el.pager.hidden = !view.paged;
 	el.prev.disabled = view.page <= 1;
@@ -161,12 +189,18 @@ function renderRows(pageRows) {
 			const note = row.isHost ? { title: cfg.hostPlayingNote } : {};
 			const classes = (...names) => names.filter(Boolean).join(" ") || null;
 
-			const tr = h("tr", { class: row.isHost ? "host" : null },
+			const pinned = state.pinned.has(row.id);
+
+			const tr = h("tr", { class: classes(row.isHost && "host", pinned && "pinned") },
 				h("td", { "data-label": "rank", ...note,
 					class: classes(row.rank === null && "muted", row.isHost && "noted") },
 					row.rank ?? "—"),
-				h("td", { "data-label": "initials" }, row.initials, attendanceMark(row)),
-				h("td", { "data-label": "country" }, row.country),
+				h("td", { "data-label": "initials" },
+					h("button", { type: "button", class: "pin", "aria-pressed": String(pinned),
+						title: pinned ? `unpin ${row.initials}` : `pin ${row.initials} to the top`,
+						on: { click: () => togglePin(row.id) } }, row.initials),
+					attendanceMark(row)),
+				h("td", { "data-label": "country" }, ...countryLinks(row.country)),
 				h("td", { "data-label": cfg.scoreLabel, ...note,
 					class: classes(!row.hasScore && "muted", row.isHost && "noted") },
 					row.hasScore ? row.scoreText : "—"),
@@ -186,6 +220,68 @@ const attendanceMark = ({ attendance }) =>
 	attendance &&
 	h("abbr", { class: "att", title: attendance.title, "aria-label": attendance.title },
 		h("span", { "aria-hidden": "true" }, attendance.mark));
+
+/** "U.K. / Finland" becomes two separate filter buttons, either of which finds them. */
+const countryLinks = (country) =>
+	country
+		.split("/")
+		.map((name) => name.trim())
+		.filter(Boolean)
+		.flatMap((name, i) => [
+			...(i > 0 ? [" / "] : []),
+			h("button", { type: "button", class: "country", title: `filter to ${name}`,
+				on: { click: () => setQuery(name) } }, name),
+		]);
+
+function renderPins() {
+	const count = state.pinned.size;
+	el.pins.hidden = count === 0;
+	if (count === 0) return;
+
+	el.pins.replaceChildren(
+		`${count} pinned `,
+		h("button", { type: "button", class: "link",
+			on: { click: () => { state.pinned.clear(); savePins(); render(); } } }, "clear"),
+	);
+}
+
+// Stats describe what is currently on screen, not the whole sheet, so filtering
+// to one country shows that country's shape.
+function renderStats({ matching }) {
+	el.stats.hidden = matching.length === 0;
+	if (matching.length === 0) return;
+
+	const { players, countries, median, min, max } = summarise(matching);
+	const scored = matching.filter((row) => row.hasScore).length;
+
+	el.statsSummary.textContent = [
+		`${players} ${players === 1 ? "player" : "players"}`,
+		`${countries} ${countries === 1 ? "country" : "countries"}`,
+		...(scored > 0 ? [`median ${format(median)}`, `${format(min)}–${format(max)}`] : []),
+	].join(" · ");
+
+	const bands = scoreBands(matching);
+	const width = Math.max(...bands.map((b) => b.label.length), 0);
+	el.histogram.textContent = bands
+		.map(({ label, count }) => `${label.padEnd(width)}  ${"█".repeat(count)} ${count || ""}`.trimEnd())
+		.join("\n");
+
+	const { counts, dual } = countryCounts(matching);
+	el.statsCountries.replaceChildren(
+		...counts.flatMap(([name, n], i) => [
+			...(i > 0 ? [" · "] : []),
+			h("button", { type: "button", class: "country", title: `filter to ${name}`,
+				on: { click: () => setQuery(name) } }, `${name} ${n}`),
+		]),
+	);
+
+	el.statsNote.hidden = dual === 0;
+	el.statsNote.textContent = dual === 0
+		? ""
+		: `${dual} ${dual === 1 ? "person is" : "people are"} counted under two countries, so the country counts total more than the number of players.`;
+}
+
+const format = (n) => `${Number.isInteger(n) ? n : n.toFixed(1)}%`;
 
 function renderHint({ total, query }) {
 	const wider =
@@ -286,6 +382,20 @@ function setShow(value) {
 	render();
 }
 
+function setQuery(value) {
+	el.filter.value = value;
+	state.query = value;
+	state.page = 1;
+	render();
+}
+
+function togglePin(id) {
+	if (!state.pinned.delete(id)) state.pinned.add(id);
+	savePins();
+	state.page = 1; // a newly pinned row belongs on the first page
+	render();
+}
+
 function goToPage(page) {
 	state.page = page;
 	render();
@@ -296,7 +406,7 @@ function goToPage(page) {
 
 function showMessage(text) {
 	Object.assign(el.message, { hidden: false, className: "message", textContent: text });
-	for (const node of [el.controls, el.table, el.pager, el.hint]) node.hidden = true;
+	for (const node of [el.controls, el.table, el.pager, el.hint, el.stats]) node.hidden = true;
 	el.count.textContent = "";
 }
 

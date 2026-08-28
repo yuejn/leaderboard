@@ -193,6 +193,24 @@ tbody tr.host td {
 	color: var(--muted);
 }
 
+/* Pinned rows sort to the top; bold marks them without costing column width,
+   which matters under the fixed layout. */
+tbody tr.pinned td {
+	font-weight: 700;
+}
+
+/* Cells that are also controls: the name pins, the country filters. They should
+   read as text until you go near them. */
+.pin,
+.country {
+	font: inherit;
+	text-align: start;
+}
+
+tr.pinned .pin {
+	font-weight: 700;
+}
+
 abbr.att {
 	margin-inline-start: 0.4ch;
 	color: var(--muted);
@@ -233,6 +251,40 @@ tr.host-note {
 
 .count {
 	margin-block: 0.5rem 0;
+}
+
+/* ─── stats ──────────────────────────────────────────────────────────────── */
+
+.stats {
+	margin-block-start: 1.5rem;
+	font-size: 12px;
+	color: var(--muted);
+
+	& summary {
+		cursor: pointer;
+		inline-size: fit-content;
+	}
+
+	&[open] summary {
+		margin-block-end: 0.75rem;
+	}
+}
+
+.stats-line {
+	margin-block: 0 0.75rem;
+	line-height: 1.9;
+}
+
+.stats-note {
+	margin-block: 0;
+	max-inline-size: 40rem;
+	text-wrap: pretty;
+}
+
+.histogram {
+	font: inherit;
+	margin-block: 0 1rem;
+	overflow-x: auto;
 }
 
 .visually-hidden {

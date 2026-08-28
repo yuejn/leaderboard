@@ -232,11 +232,18 @@ export const matches = (row, query) =>
 	row.initials.toLowerCase().includes(query) ||
 	row.country.toLowerCase().includes(query);
 
-export function makeCompare({ sortKey, sortDir }) {
+export function makeCompare({ sortKey, sortDir, pinned }) {
 	const { tail, cmp } = SORTS[sortKey];
 	const direction = sortDir === "asc" ? 1 : -1;
 
 	return (a, b) => {
+		// Pinned rows float to the top of whatever is showing, in every sort and
+		// direction. They are not exempt from filters: pinning is a highlight, not
+		// an override, so a pinned row the current view excludes stays excluded.
+		if (pinned?.size) {
+			const [pinnedA, pinnedB] = [pinned.has(a.id), pinned.has(b.id)];
+			if (pinnedA !== pinnedB) return pinnedA ? -1 : 1;
+		}
 		if (tail) {
 			const [tailA, tailB] = [tail(a), tail(b)];
 			if (tailA !== tailB) return tailA ? 1 : -1; // unranked / unscored always last
@@ -258,7 +265,7 @@ export function selectRows(rows, state, { pageSize }) {
 	const sorted = matching.toSorted(makeCompare(state));
 
 	if (!pageSize) {
-		return { rows: sorted, total: sorted.length, pages: 1, page: 1, paged: false, query };
+		return { rows: sorted, matching: sorted, total: sorted.length, pages: 1, page: 1, paged: false, query };
 	}
 
 	const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
@@ -267,10 +274,72 @@ export function selectRows(rows, state, { pageSize }) {
 
 	return {
 		rows: sorted.slice(start, start + pageSize),
+		matching: sorted, // every match, not just this page — the stats read from it
 		total: sorted.length,
 		pages,
 		page,
 		paged: true,
 		query,
+	};
+}
+
+// ─── stats ───────────────────────────────────────────────────────────────────
+
+/**
+ * Players per country, most first. Someone recorded as "U.K. / Finland" counts
+ * once for each, so the counts can total more than the number of people —
+ * `dual` says how many rows that applies to.
+ */
+export function countryCounts(rows) {
+	const counts = new Map();
+	let dual = 0;
+
+	for (const row of rows) {
+		const names = row.country.split("/").map((name) => name.trim()).filter(Boolean);
+		if (names.length > 1) dual++;
+		for (const name of names) counts.set(name, (counts.get(name) ?? 0) + 1);
+	}
+
+	return {
+		counts: [...counts].sort((a, b) => b[1] - a[1] || collator.compare(a[0], b[0])),
+		dual,
+	};
+}
+
+/** Scores grouped into bands, highest first. Empty bands inside the range are kept. */
+export function scoreBands(rows, size = 10) {
+	const bands = new Map();
+	for (const row of rows.filter((r) => r.hasScore)) {
+		const floor = Math.floor(row.scoreNum / size) * size;
+		bands.set(floor, (bands.get(floor) ?? 0) + 1);
+	}
+	if (bands.size === 0) return [];
+
+	const floors = [...bands.keys()];
+	const out = [];
+	for (let floor = Math.max(...floors); floor >= Math.min(...floors); floor -= size) {
+		out.push({ floor, label: `${floor}–${floor + size - 1}%`, count: bands.get(floor) ?? 0 });
+	}
+	return out;
+}
+
+export function summarise(rows) {
+	const scores = rows.filter((r) => r.hasScore).map((r) => r.scoreNum).sort((a, b) => a - b);
+	const { counts, dual } = countryCounts(rows);
+
+	const mid = scores.length / 2;
+	const median = scores.length === 0
+		? null
+		: scores.length % 2 === 1
+			? scores[Math.floor(mid)]
+			: (scores[mid - 1] + scores[mid]) / 2;
+
+	return {
+		players: rows.length,
+		countries: counts.length,
+		dual,
+		median,
+		min: scores.at(0) ?? null,
+		max: scores.at(-1) ?? null,
 	};
 }

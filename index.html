@@ -28,6 +28,7 @@
       <label for="sort-select">sort by&hellip;</label>
       <select id="sort-select"></select>
     </p>
+    <p class="control pins" id="pins" hidden></p>
     <p class="legend" id="legend"></p>
   </search>
 
@@ -55,6 +56,14 @@
   </nav>
 
   <p class="count" id="count" aria-live="polite"></p>
+
+  <details class="stats" id="stats" hidden>
+    <summary>stats</summary>
+    <p class="stats-line" id="stats-summary"></p>
+    <pre class="histogram" id="histogram"></pre>
+    <p class="stats-line" id="stats-countries"></p>
+    <p class="stats-note" id="stats-note" hidden></p>
+  </details>
 </main>
 <script type="module" src="app.js"></script>
 </body>
