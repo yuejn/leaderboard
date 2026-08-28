@@ -14,6 +14,6 @@
     "30%+": { "mark": "+", "title": "attends 30%+ of quizzes" },
     "60%+": { "mark": "++", "title": "attends 60%+ of quizzes" }
   },
-  "defaultShow": "all",
+  "defaultShow": "ranked",
   "defaultSort": { "key": "score", "dir": "desc" }
 }
