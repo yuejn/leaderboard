@@ -156,7 +156,7 @@ table {
 col:nth-child(1) { inline-size: 6ch; }  /* rank      */
 col:nth-child(2) { inline-size: 11ch; } /* initials  */
 col:nth-child(3) { inline-size: 21ch; } /* country   */
-col:nth-child(4) { inline-size: 11ch; } /* win rate  */
+col:nth-child(4) { inline-size: 15ch; } /* score     */
 col:nth-child(5) { inline-size: 20ch; } /* status    */
 
 thead th {

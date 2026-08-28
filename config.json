@@ -2,7 +2,7 @@
   "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtpqOiO5Uwur1nlzUcBZJPP4EDn_Y6Z8hHG0qB95IFbg8fNPNdE0wpezbwWiyCZOJWkuFbMp-TDQXT/pub?gid=2026368046&single=true&output=csv",
   "pageSize": 0,
   "mobilePageSize": 20,
-  "scoreLabel": "win rate",
+  "scoreLabel": "track record",
   "provisionalLegend": "provisional = fewer than 4 quizzes played",
   "hostedThreshold": 8,
   "hostLabel": "host",

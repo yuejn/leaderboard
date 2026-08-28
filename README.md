@@ -30,7 +30,7 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 | `hostedThreshold` | `Hosted >= this` marks someone a host |
 | `hostLabel` | Appended to a host's status, e.g. `ranked · host` |
 | `hostSeparator` | What sits between the two, e.g. `" · "` |
-| `hostPlayingNote` | Tooltip on a host's rank and win rate |
+| `hostPlayingNote` | Tooltip on a host's rank and score cells |
 | `quizmasterIds` | Sheet `ID`s of the people who run the quiz, e.g. `[26]` |
 | `quizmasterLabel` | What their status cell says instead of `Ranked`/`Provisional` |
 | `attendance` | Maps each `Attended` value to a `mark` and a `title` |
@@ -87,7 +87,7 @@ shift when you sort or filter.
 
 ### Hosts
 
-Anyone with `Hosted >= hostedThreshold` keeps their real rank and win rate. The
+Anyone with `Hosted >= hostedThreshold` keeps their real rank and score. The
 row is greyed and the rank and win-rate cells carry a tooltip noting those
 figures are their playing record.
 
