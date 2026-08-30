@@ -3,6 +3,7 @@ import {
 	COLUMNS,
 	SHOW_VALUES,
 	SORTS,
+	barLengths,
 	countryCounts,
 	parseRows,
 	matches,
@@ -294,10 +295,14 @@ function renderStats({ matching }) {
 		...(scored > 0 ? [`median ${format(median)}`, `${format(min)}–${format(max)}`] : []),
 	].join(" · ");
 
+	// Bars are scaled to a fixed width; the count is printed after each one, so
+	// no information is lost by not drawing one block per player.
 	const bands = scoreBands(matching);
 	const width = Math.max(...bands.map((b) => b.label.length), 0);
+	const bars = barLengths(bands, MAX_BAR);
 	el.histogram.textContent = bands
-		.map(({ label, count }) => `${label.padEnd(width)}  ${"█".repeat(count)} ${count || ""}`.trimEnd())
+		.map(({ label, count }, i) =>
+			`${label.padEnd(width)}  ${"█".repeat(bars[i])} ${count || ""}`.trimEnd())
 		.join("\n");
 
 	const { counts, dual } = countryCounts(matching);

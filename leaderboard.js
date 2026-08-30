@@ -337,6 +337,20 @@ export function scoreBands(rows, size = 10) {
 	return out;
 }
 
+/**
+ * Bar lengths for the histogram, scaled so the tallest band is `max` blocks.
+ * Unscaled bars ran off the side of a narrow screen once a band held twenty-odd
+ * players. Any non-empty band keeps at least one block, so a band that has
+ * someone in it never looks empty.
+ */
+export function barLengths(bands, max = 24) {
+	const peak = Math.max(0, ...bands.map((band) => band.count));
+	if (peak === 0) return bands.map(() => 0);
+
+	const scale = Math.min(1, max / peak);
+	return bands.map(({ count }) => (count === 0 ? 0 : Math.max(1, Math.round(count * scale))));
+}
+
 export function summarise(rows) {
 	const scores = rows.filter((r) => r.hasScore).map((r) => r.scoreNum).sort((a, b) => a - b);
 	const { counts, dual } = countryCounts(rows);

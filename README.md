@@ -169,7 +169,9 @@ way some countries are reachable at all.
 The collapsed `stats` panel describes **what is currently on screen**, not the
 whole sheet, so filtering to one country shows that country's shape. It holds a
 summary line, a win-rate histogram in bands of ten, and players per country
-(each also a filter link).
+(each also a filter link). Histogram bars are scaled so the tallest band fits a
+fixed width — one block per player ran off the side of a narrow screen — and the
+count is printed after each bar, so nothing is lost to the scaling.
 
 Counts only — no per-country averages. Most countries here have one or two
 players, so an average would be noise dressed up as a ranking. Note that someone
