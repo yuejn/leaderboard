@@ -189,10 +189,14 @@ table {
 	table-layout: fixed;
 }
 
+/* Every width allows for the 18px of padding inside the cell. The country needs
+   to hold the longest dual entry on one line — "South Africa / Canada" — since
+   wrapping one row makes the whole block look ragged; the initials give up the
+   room, being five characters plus an attendance mark at most. */
 col:nth-child(1) { inline-size: 6ch; }  /* rank      */
-col:nth-child(2) { inline-size: 11ch; } /* initials  */
-col:nth-child(3) { inline-size: 21ch; } /* country   */
-col:nth-child(4) { inline-size: 15ch; } /* score     */
+col:nth-child(2) { inline-size: 10ch; } /* initials — "A. M." plus a "++" mark */
+col:nth-child(3) { inline-size: 24ch; } /* country   */
+col:nth-child(4) { inline-size: 16ch; } /* score     */
 col:nth-child(5) { inline-size: 35ch; } /* status — fits "Provisional · hosted a few times" */
 
 thead th {
