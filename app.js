@@ -146,7 +146,16 @@ function render() {
 	const view = selectRows(rows, state, { pageSize });
 	state.page = view.page;
 
+	// The tbody is rebuilt wholesale, so the control you just activated is gone
+	// by the time it would take focus back — pinning three people in a row threw
+	// a keyboard user to the top of the document three times. Rows carry a stable
+	// key, so the same control can be found again after the rebuild.
+	const focusKey = el.tbody.contains(document.activeElement)
+		? (document.activeElement.dataset.focusKey ?? null)
+		: null;
+
 	renderRows(view.rows);
+	if (focusKey) refocus(focusKey);
 	renderHint(view);
 	renderPins();
 	renderStats(view);
@@ -180,24 +189,43 @@ function render() {
 		else th.removeAttribute("aria-sort");
 	}
 	el.sortSelect.value = `${state.sortKey}:${state.sortDir}`;
+	el.clearFilter.hidden = el.filter.value === "";
+}
+
+// Matched by value rather than by selector: the keys carry sheet text, which is
+// free to contain quotes and brackets.
+function refocus(key) {
+	for (const node of el.tbody.querySelectorAll("[data-focus-key]")) {
+		if (node.dataset.focusKey === key) {
+			node.focus();
+			return;
+		}
+	}
 }
 
 function renderRows(pageRows) {
 	el.tbody.replaceChildren(
 		...pageRows.flatMap((row) => {
 			// Hosts keep a real rank and win rate; the note explains it is a playing
-			// record, and the muted row keeps them visually apart.
-			const note = row.isHost ? { title: cfg.hostPlayingNote } : {};
+			// record, and the muted row keeps them visually apart. The visual note
+			// reaches sighted readers two ways — a tooltip when wide, its own line
+			// when narrow — so the cells carry it in their accessible name too, or
+			// screen readers would get it at neither width.
+			const note = (value) =>
+				row.isHost
+					? { title: cfg.hostPlayingNote, "aria-label": `${value}, ${cfg.hostPlayingNote}` }
+					: {};
 			const classes = (...names) => names.filter(Boolean).join(" ") || null;
 
 			const pinned = state.pinned.has(row.id);
 
 			const tr = h("tr", { class: classes(row.isHost && "host", pinned && "pinned") },
-				h("td", { "data-label": "rank", ...note,
+				h("td", { "data-label": "rank", ...note(row.rank ?? "unranked"),
 					class: classes(row.rank === null && "muted", row.isHost && "noted") },
 					row.rank ?? "—"),
 				h("td", { "data-label": "initials" },
 					h("button", { type: "button", class: "pin", "aria-pressed": String(pinned),
+						"data-focus-key": `pin:${row.id}`,
 						title: pinned ? `unpin ${row.initials}` : `pin ${row.initials} to the top`,
 						on: { click: () => togglePin(row.id) } }, row.initials),
 					attendanceMark(row)),
@@ -224,14 +252,15 @@ const attendanceMark = ({ attendance }) =>
 		h("span", { "aria-hidden": "true" }, attendance.mark));
 
 /** "U.K. / Finland" becomes two separate filter buttons, either of which finds them. */
-const countryLinks = (country) =>
-	country
+const countryLinks = (row) =>
+	row.country
 		.split("/")
 		.map((name) => name.trim())
 		.filter(Boolean)
 		.flatMap((name, i) => [
 			...(i > 0 ? [" / "] : []),
 			h("button", { type: "button", class: "country", title: `filter to ${name}`,
+				"data-focus-key": `country:${row.id}:${name}`,
 				on: { click: () => setQuery(name) } }, name),
 		]);
 
