@@ -31,6 +31,7 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 | `hostLabel` | Appended to a host's status, e.g. `ranked · host` |
 | `hostSeparator` | What sits between the two, e.g. `" · "` |
 | `hostPlayingNote` | Tooltip on a host's rank and score cells |
+| `hostedCountLabel` | The word before the count in the hosts view, e.g. `hosted 3` |
 | `quizmasterIds` | Sheet `ID`s of the people who run the quiz, e.g. `[26]` |
 | `quizmasterLabel` | What their status cell says instead of `Ranked`/`Provisional` |
 | `attendance` | Maps each `Attended` value to a `mark` and a `title` |
@@ -114,6 +115,20 @@ status cell reads `ranked · host` or `provisional · host`. That matters: a hos
 can be ranked or provisional, and collapsing both to `host` made a ranked host
 and an unranked one look identical. They still appear under `ranked` /
 `provisional` according to their real status, and sort with their own group.
+
+**`show: hosts` is a different question.** It lists everyone who has *ever*
+hosted — `Hosted >= 1`, plus the quizmasters — not just those over
+`hostedThreshold`. The threshold decides who gets marked a host in the
+standings, which is a judgement about how much of their record is missing from
+their score; the hosts view is a roster, and one that leaves out someone who
+hosted once is simply wrong.
+
+So the two can disagree, deliberately: someone who hosted once appears in the
+hosts list but is *not* greyed, tooltipped or labelled `· host` in the
+standings. To keep the roster readable, the status cell in that view shows the
+count instead of the `· host` suffix — `ranked · hosted 1`, `quiz master ·
+hosted 12` — since in a list of nothing but hosts the word is noise and the
+number isn't. That wording is `hostedCountLabel`.
 
 ### Quizmasters
 

@@ -293,7 +293,7 @@ function renderRows(pageRows) {
 				h("td", { "data-label": cfg.scoreLabel, ...note(row.hasScore ? row.scoreText : "no score"),
 					class: classes(!row.hasScore && "muted", row.isHost && "noted") },
 					row.hasScore ? row.scoreText : "—"),
-				h("td", { "data-label": "status" }, row.statusText),
+				h("td", { "data-label": "status" }, statusIn(row)),
 			);
 
 			// Narrow screens have no hover, so the host note gets its own line. It
@@ -304,6 +304,19 @@ function renderRows(pageRows) {
 				: [tr];
 		}),
 	);
+}
+
+/**
+ * The hosts view is a roster, so it says how much each person has hosted —
+ * without it, someone who hosted once sits in the list with nothing to show for
+ * being there. The count replaces the `· host` suffix rather than joining it:
+ * in a list of nothing but hosts, the word is noise and the number isn't.
+ */
+function statusIn(row) {
+	if (state.show !== "hosts" || row.hosted === 0) return row.statusText;
+
+	const label = row.isQuizmaster ? cfg.quizmasterLabel : row.status || "—";
+	return `${label}${cfg.hostSeparator}${cfg.hostedCountLabel} ${row.hosted}`;
 }
 
 const attendanceMark = ({ attendance }) =>

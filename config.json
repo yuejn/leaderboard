@@ -8,6 +8,7 @@
   "hostLabel": "host",
   "hostSeparator": " · ",
   "hostPlayingNote": "record from games played, not hosted",
+  "hostedCountLabel": "hosted",
   "quizmasterIds": [26],
   "quizmasterLabel": "quiz master",
   "attendance": {

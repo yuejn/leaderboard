@@ -24,7 +24,11 @@ const MATCHERS = {
 	all: () => true,
 	ranked: (r) => r.isRanked,
 	provisional: (r) => r.isProvisional,
-	hosts: (r) => r.isHost,
+	// Everyone who has ever hosted, not just those over `hostedThreshold`. The
+	// threshold decides who is *marked* a host in the standings, which is a
+	// judgement about how much of their record is missing; the hosts view is a
+	// roster, and leaving out someone who hosted once makes it a wrong one.
+	hosts: (r) => r.hasHosted,
 };
 
 export const matchesShow = (row, show) => MATCHERS[show](row);
@@ -174,6 +178,7 @@ export function parseRows(text, config, onWarn = console.warn) {
 		// or a sheet with no ID column would crown whoever sits at that index.
 		const isQuizmaster = !Number.isNaN(id) && quizmasters.has(id);
 		const isHost = isQuizmaster || hosted >= config.hostedThreshold;
+		const hasHosted = isQuizmaster || hosted > 0;
 
 		// Hosting annotates the competitor status rather than replacing it, so a
 		// ranked host still reads as ranked. A quizmaster isn't really competing,
@@ -203,6 +208,7 @@ export function parseRows(text, config, onWarn = console.warn) {
 			isProvisional: status.toLowerCase() === "provisional",
 			hosted,
 			isHost,
+			hasHosted,
 			isQuizmaster,
 			attendance,
 			rank: null,
