@@ -25,6 +25,9 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 | `csvUrl` | The published-sheet CSV URL (see below) |
 | `pageSize` | Rows per page on the wide layout. **`0` = no pagination** |
 | `mobilePageSize` | Rows per page on the narrow layout. **`0` = no pagination** |
+| `refreshMinutes` | How often an open page re-reads the sheet. **`0` = only on load** |
+| `playersNote` | The line under the title, after the row count |
+| `updatedLabel` | The word before the last-read time on that same line |
 | `scoreLabel` | Column heading for the sheet's `Score` column |
 | `provisionalLegend` | First legend line under the filters |
 | `hostedThreshold` | `Hosted >= this` marks someone a host |
@@ -40,6 +43,25 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 
 A missing or malformed key shows an error naming it rather than failing
 silently.
+
+### Staying current
+
+The sheet is fetched fresh on every page load, which is how the numbers are
+almost always current. On top of that, an *already open* page re-reads the sheet
+every `refreshMinutes` and again when you return to a tab that has been sitting
+in the background longer than that. Your sort, filter, bucket, page and pins all
+survive a refresh.
+
+`refreshMinutes` is **1440** — once a day. The quiz updates every couple of
+months, so polling any harder would be asking Google the same question hundreds
+of times for an answer that changes six times a year; a day is enough to stop a
+tab left open over the weekend from showing numbers from before the last quiz.
+Set it to `0` to switch background refreshing off entirely.
+
+A refresh that fails is swallowed: the standings already on screen stay up and
+the next attempt is minutes away. That is not a contradiction of "if it's down,
+it's down" — that rule is about the *first* load, which has nothing to fall back
+on and still shows an error and a retry link.
 
 ### Linking to a view
 

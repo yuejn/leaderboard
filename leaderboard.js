@@ -51,9 +51,12 @@ export function validateConfig(c) {
 		if (!isInt(c[key], 0)) fail(key, "must be 0 (no pagination) or a positive integer");
 	}
 	if (!isInt(c.hostedThreshold, 0)) fail("hostedThreshold", "must be a non-negative integer");
+	if (!isInt(c.refreshMinutes, 0)) {
+		fail("refreshMinutes", "must be 0 (never re-read the sheet) or a positive integer");
+	}
 
 	const strings = ["scoreLabel", "provisionalLegend", "hostLabel", "hostSeparator",
-		"hostPlayingNote", "quizmasterLabel"];
+		"hostPlayingNote", "hostedCountLabel", "quizmasterLabel", "playersNote", "updatedLabel"];
 	for (const key of strings) {
 		if (!isText(c[key])) fail(key, "must be a non-empty string");
 	}

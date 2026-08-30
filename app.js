@@ -38,6 +38,7 @@ const el = Object.fromEntries(
 let cfg = null;
 let rows = [];
 let built = false;
+let refreshTimer = null;
 const state = {
 	sortKey: "score", sortDir: "desc", show: "all", query: "", page: 1,
 	pinned: loadPins(),
@@ -80,12 +81,64 @@ async function boot() {
 			built = true;
 		}
 		el.filter.value = state.query;
-		el.meta.textContent = `${rows.length} total players all-time`;
+		setMeta();
 		el.message.hidden = true;
 		for (const node of [el.controls, el.table, el.pager]) node.hidden = false;
 		update();
+		startRefresh();
 	} catch (error) {
 		showError(error);
+	}
+}
+
+const setMeta = (at = new Date()) => {
+	const time = at.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+	el.meta.textContent = `${rows.length} ${cfg.playersNote} · ${cfg.updatedLabel} ${time}`;
+};
+
+// ─── staying current ─────────────────────────────────────────────────────────
+
+/**
+ * The page is meant to be left open through a quiz, so the sheet is re-read in
+ * the background. A failed refresh keeps the data already on screen rather than
+ * replacing it with an error: the last standings beat no standings, and the
+ * next attempt is minutes away. The deliberate "if it's down, it's down" rule
+ * is about the first load, which has nothing to fall back on.
+ */
+function startRefresh() {
+	clearInterval(refreshTimer);
+	if (cfg.refreshMinutes === 0) return;
+
+	refreshInterval = cfg.refreshMinutes * 60_000;
+	refreshTimer = setInterval(refresh, refreshInterval);
+}
+
+let refreshInterval = 0;
+let lastLoad = Date.now();
+let refreshing = false;
+
+// A backgrounded tab gets its timers throttled, so catch up on return.
+document.addEventListener("visibilitychange", () => {
+	if (!document.hidden && refreshInterval > 0 && Date.now() - lastLoad >= refreshInterval) {
+		refresh();
+	}
+});
+
+async function refresh() {
+	if (refreshing || document.hidden) return;
+	refreshing = true;
+	try {
+		const next = parseRows(await loadCsv(cfg.csvUrl), cfg);
+		lastLoad = Date.now();
+		if (next.length === 0) return; // a momentarily empty sheet is not news
+
+		rows = next;
+		setMeta();
+		render();
+	} catch (error) {
+		console.warn("leaderboard: background refresh failed, keeping the current data", error);
+	} finally {
+		refreshing = false;
 	}
 }
 
