@@ -7,7 +7,10 @@
 <!-- Not for finding. This keeps the page out of search results; it does not make
      it private — see the README. -->
 <meta name="robots" content="noindex, nofollow, noarchive">
+<!-- Inline so there is no second request, and no 404 when there isn't one. -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23f4f1ea'/><rect x='2' y='9' width='3' height='5' fill='%231a1a1a'/><rect x='6.5' y='4' width='3' height='10' fill='%231a1a1a'/><rect x='11' y='11' width='3' height='3' fill='%231a1a1a'/></svg>">
 <link rel="stylesheet" href="style.css">
+<noscript><style>#message { display: none; }</style></noscript>
 </head>
 <body>
 <main>
@@ -20,6 +23,10 @@
   <p class="meta" id="meta"></p>
 
   <p class="message" id="message" role="status" aria-live="polite">loading&hellip;</p>
+  <noscript>
+    <p class="message error">this page needs JavaScript &mdash; it reads the standings from a
+      published spreadsheet each time it loads.</p>
+  </noscript>
 
   <search class="controls" id="controls" hidden>
     <p class="control">
