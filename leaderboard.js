@@ -187,7 +187,11 @@ export function parseRows(text, config, onWarn = console.warn) {
 				: label;
 
 		return {
-			id: Number.isNaN(id) ? i : id,
+			// A row with no usable ID gets a negative synthetic one. Positional
+			// indices collided with real sheet IDs — a blank-ID row at body index
+			// 26 became id 26 — which crossed pins and the sort tiebreak between
+			// two unrelated people.
+			id: Number.isNaN(id) ? -(i + 1) : id,
 			initials,
 			country: cell("Country"),
 			scoreText,
