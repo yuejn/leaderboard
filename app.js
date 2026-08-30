@@ -67,13 +67,7 @@ async function boot() {
 	showMessage("loading…");
 	try {
 		cfg = validateConfig(await loadJson(CONFIG_URL, "config.json"));
-		Object.assign(state, {
-			show: cfg.defaultShow,
-			sortKey: cfg.defaultSort.key,
-			sortDir: cfg.defaultSort.dir,
-			query: "",
-			page: 1,
-		});
+		Object.assign(state, readUrl());
 
 		rows = parseRows(await loadCsv(cfg.csvUrl), cfg);
 		if (rows.length === 0) {
@@ -85,15 +79,77 @@ async function boot() {
 			buildControls();
 			built = true;
 		}
-		el.filter.value = "";
+		el.filter.value = state.query;
 		el.meta.textContent = `${rows.length} total players all-time`;
 		el.message.hidden = true;
 		for (const node of [el.controls, el.table, el.pager]) node.hidden = false;
-		render();
+		update();
 	} catch (error) {
 		showError(error);
 	}
 }
+
+// ─── url state ───────────────────────────────────────────────────────────────
+
+/**
+ * Sort, filter, bucket and page live in the query string, so a view can be
+ * linked to and the back button walks the views you visited. Pins are excluded:
+ * they are this visitor's, not part of what a link should carry.
+ */
+function readUrl() {
+	const params = new URLSearchParams(location.search);
+	const show = params.get("show");
+	const [key, dir] = (params.get("sort") ?? "").split(":");
+	const page = Number.parseInt(params.get("page") ?? "", 10);
+	const known = COLUMNS.includes(key);
+
+	return {
+		show: SHOW_VALUES.includes(show) ? show : cfg.defaultShow,
+		sortKey: known ? key : cfg.defaultSort.key,
+		sortDir: known
+			? (["asc", "desc"].includes(dir) ? dir : SORTS[key].dir)
+			: cfg.defaultSort.dir,
+		query: params.get("q") ?? "",
+		page: Number.isInteger(page) && page > 0 ? page : 1,
+	};
+}
+
+/** Only what differs from the defaults, so the landing view keeps a bare URL. */
+function urlFromState() {
+	const params = new URLSearchParams();
+	const query = state.query.trim();
+
+	if (state.show !== cfg.defaultShow) params.set("show", state.show);
+	if (query) params.set("q", query);
+	if (state.sortKey !== cfg.defaultSort.key || state.sortDir !== cfg.defaultSort.dir) {
+		params.set("sort", `${state.sortKey}:${state.sortDir}`);
+	}
+	if (state.page > 1) params.set("page", String(state.page));
+
+	const search = params.toString();
+	return `${location.pathname}${search ? `?${search}` : ""}`;
+}
+
+/**
+ * Renders, then writes the URL — `render` clamps the page number, and the URL
+ * should carry the page you are actually on. Deliberate moves push a history
+ * entry; typing in the filter box and layout changes replace, so the back
+ * button doesn't have to walk back through every keystroke.
+ */
+function update({ push = false } = {}) {
+	render();
+
+	const url = urlFromState();
+	if (url === `${location.pathname}${location.search}`) return;
+	history[push ? "pushState" : "replaceState"](null, "", url);
+}
+
+addEventListener("popstate", () => {
+	if (!built) return;
+	Object.assign(state, readUrl());
+	el.filter.value = state.query;
+	render();
+});
 
 // ─── loading ─────────────────────────────────────────────────────────────────
 
@@ -233,8 +289,8 @@ function renderRows(pageRows) {
 						title: pinned ? `unpin ${row.initials}` : `pin ${row.initials} to the top`,
 						on: { click: () => togglePin(row.id) } }, row.initials),
 					attendanceMark(row)),
-				h("td", { "data-label": "country" }, ...countryLinks(row.country)),
-				h("td", { "data-label": cfg.scoreLabel, ...note,
+				h("td", { "data-label": "country" }, ...countryLinks(row)),
+				h("td", { "data-label": cfg.scoreLabel, ...note(row.hasScore ? row.scoreText : "no score"),
 					class: classes(!row.hasScore && "muted", row.isHost && "noted") },
 					row.hasScore ? row.scoreText : "—"),
 				h("td", { "data-label": "status" }, row.statusText),
@@ -276,7 +332,7 @@ function renderPins() {
 	el.pins.replaceChildren(
 		`${count} pinned `,
 		h("button", { type: "button", class: "link",
-			on: { click: () => { state.pinned.clear(); savePins(); render(); } } }, "clear"),
+			on: { click: () => { state.pinned.clear(); savePins(); update(); } } }, "clear"),
 	);
 }
 
@@ -372,7 +428,7 @@ function buildControls() {
 	el.sortSelect.addEventListener("change", () => {
 		[state.sortKey, state.sortDir] = el.sortSelect.value.split(":");
 		state.page = 1;
-		render();
+		update({ push: true });
 	});
 
 	el.thead.addEventListener("click", ({ target }) => {
@@ -398,7 +454,7 @@ function buildControls() {
 		debounce = setTimeout(() => {
 			state.query = el.filter.value;
 			state.page = 1;
-			render();
+			update(); // replace, so back doesn't retrace every keystroke
 		}, FILTER_DEBOUNCE_MS);
 	});
 
@@ -409,7 +465,7 @@ function buildControls() {
 		if (isNarrow() === narrow) return;
 		narrow = !narrow;
 		state.page = 1;
-		render();
+		update();
 	}).observe(board);
 }
 
@@ -421,32 +477,32 @@ function setSort(key) {
 		state.sortDir = SORTS[key].dir;
 	}
 	state.page = 1;
-	render();
+	update({ push: true });
 }
 
 function setShow(value) {
 	state.show = value;
 	state.page = 1;
-	render();
+	update({ push: true });
 }
 
 function setQuery(value) {
 	el.filter.value = value;
 	state.query = value;
 	state.page = 1;
-	render();
+	update({ push: true });
 }
 
 function togglePin(id) {
 	if (!state.pinned.delete(id)) state.pinned.add(id);
 	savePins();
 	state.page = 1; // a newly pinned row belongs on the first page
-	render();
+	update(); // pins aren't in the URL, so this is not a place to come back to
 }
 
 function goToPage(page) {
 	state.page = page;
-	render();
+	update({ push: true });
 	scrollTo({ top: 0 });
 }
 

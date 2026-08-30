@@ -40,6 +40,18 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 A missing or malformed key shows an error naming it rather than failing
 silently.
 
+### Linking to a view
+
+The sort, filter, bucket and page number live in the query string
+(`?show=all&q=finland&sort=score:asc&page=2`), so any view can be linked to and
+the back button walks the views you visited. Anything left at its default is
+left out, so the landing view keeps a bare URL. Typing in the filter box
+replaces the current history entry rather than adding one, so back doesn't
+retrace every keystroke.
+
+Pins are deliberately **not** in the URL — they are yours, not part of what a
+shared link should carry.
+
 ### Pagination
 
 Paging is decided by how wide the table is, not by the device. Below 520px each
