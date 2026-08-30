@@ -37,7 +37,7 @@ redeploys and the change is live. Nothing below is duplicated in the JavaScript.
 | `hostLabel` | Appended to a host's status, e.g. `ranked · host` |
 | `hostSeparator` | What sits between the two, e.g. `" · "` |
 | `hostPlayingNote` | Tooltip on a host's rank and score cells |
-| `hostedCountLabel` | The word before the count in the hosts view, e.g. `hosted 3` |
+| `hostedBands` | How much hosting is described in words. See *Hosts* |
 | `quizmasterIds` | Sheet `ID`s of the people who run the quiz, e.g. `[26]` |
 | `quizmasterLabel` | What their status cell says instead of `Ranked`/`Provisional` |
 | `attendance` | Maps each `Attended` value to a `mark` and a `title` |
@@ -154,10 +154,29 @@ hosted once is simply wrong.
 
 So the two can disagree, deliberately: someone who hosted once appears in the
 hosts list but is *not* greyed, tooltipped or labelled `· host` in the
-standings. To keep the roster readable, the status cell in that view shows the
-count instead of the `· host` suffix — `ranked · hosted 1`, `quiz master ·
-hosted 12` — since in a list of nothing but hosts the word is noise and the
-number isn't. That wording is `hostedCountLabel`.
+standings. To keep the roster readable, the status cell in that view replaces
+the `· host` suffix with how much that person hosts — `ranked · hosted twice`,
+`quiz master · hosted regularly` — since in a list of nothing but hosts the
+word `host` is noise.
+
+It says so **in words, not a tally**. Roughly how much of a fixture someone is
+is the useful thing; an exact count invites arithmetic these numbers aren't
+meant to carry. The wording and the cut-offs are `hostedBands`:
+
+```json
+"hostedBands": [
+  { "from": 1, "text": "hosted once" },
+  { "from": 2, "text": "hosted twice" },
+  { "from": 3, "text": "hosted a few times" },
+  { "from": 8, "text": "hosted regularly" }
+]
+```
+
+Each row takes the highest band it reaches, so `from` is the *first* count that
+earns that phrase and a band holds until the next one starts — 3 through 7 is
+"a few times", 8 and up is "regularly". Bands must be ordered lowest first, and
+the first must start at `1` so nobody in the roster is left unlabelled; the page
+refuses to load and names the offending band otherwise.
 
 ### Quizmasters
 

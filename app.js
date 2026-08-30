@@ -5,6 +5,7 @@ import {
 	SORTS,
 	barLengths,
 	countryCounts,
+	hostedLabel,
 	parseRows,
 	matches,
 	scoreBands,
@@ -364,14 +365,16 @@ function renderRows(pageRows) {
 /**
  * The hosts view is a roster, so it says how much each person has hosted —
  * without it, someone who hosted once sits in the list with nothing to show for
- * being there. The count replaces the `· host` suffix rather than joining it:
- * in a list of nothing but hosts, the word is noise and the number isn't.
+ * being there. It says so in words, not a tally: the point is roughly how much
+ * of a fixture someone is, and an exact count invites arithmetic the numbers
+ * aren't meant to carry. This replaces the `· host` suffix rather than joining
+ * it, since in a list of nothing but hosts the word is noise.
  */
 function statusIn(row) {
 	if (state.show !== "hosts" || row.hosted === 0) return row.statusText;
 
 	const label = row.isQuizmaster ? cfg.quizmasterLabel : row.status || "—";
-	return `${label}${cfg.hostSeparator}${cfg.hostedCountLabel} ${row.hosted}`;
+	return `${label}${cfg.hostSeparator}${hostedLabel(row.hosted, cfg.hostedBands)}`;
 }
 
 const attendanceMark = ({ attendance }) =>

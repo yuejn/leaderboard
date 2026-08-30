@@ -12,6 +12,7 @@ import {
 	assignRanks,
 	barLengths,
 	countryCounts,
+	hostedLabel,
 	makeCompare,
 	matches,
 	matchesShow,
@@ -39,7 +40,12 @@ const config = (overrides = {}) => ({
 	hostLabel: "host",
 	hostSeparator: " · ",
 	hostPlayingNote: "record from games played, not hosted",
-	hostedCountLabel: "hosted",
+	hostedBands: [
+		{ from: 1, text: "hosted once" },
+		{ from: 2, text: "hosted twice" },
+		{ from: 3, text: "hosted a few times" },
+		{ from: 8, text: "hosted regularly" },
+	],
 	quizmasterIds: [26],
 	quizmasterLabel: "quiz master",
 	attendance: {
@@ -128,7 +134,10 @@ describe("validateConfig", () => {
 		mobilePageSize: [{ mobilePageSize: -1 }],
 		hostedThreshold: [{ hostedThreshold: -1 }],
 		refreshMinutes: [{ refreshMinutes: -1 }, { refreshMinutes: 0.5 }, { refreshMinutes: undefined }],
-		hostedCountLabel: [{ hostedCountLabel: "" }],
+		hostedBands: [{ hostedBands: [] }, { hostedBands: {} }],
+		"hostedBands[0]": [{ hostedBands: [{ from: 2, text: "hosted twice" }] }],
+		"hostedBands[1]": [{ hostedBands: [
+			{ from: 1, text: "hosted once" }, { from: 1, text: "again" }] }],
 		playersNote: [{ playersNote: "" }],
 		updatedLabel: [{ updatedLabel: undefined }],
 		scoreLabel: [{ scoreLabel: "   " }],
@@ -322,6 +331,37 @@ describe("parseRows", () => {
 });
 
 // ─── assignRanks ─────────────────────────────────────────────────────────────
+
+describe("hostedLabel", () => {
+	const bands = config().hostedBands;
+
+	it("says nothing for someone who has never hosted", () => {
+		assert.equal(hostedLabel(0, bands), null);
+	});
+
+	it("names each band by its own count", () => {
+		assert.equal(hostedLabel(1, bands), "hosted once");
+		assert.equal(hostedLabel(2, bands), "hosted twice");
+		assert.equal(hostedLabel(3, bands), "hosted a few times");
+		assert.equal(hostedLabel(8, bands), "hosted regularly");
+	});
+
+	it("holds a band until the next one starts", () => {
+		assert.equal(hostedLabel(7, bands), "hosted a few times");
+		assert.equal(hostedLabel(9, bands), "hosted regularly");
+		assert.equal(hostedLabel(100, bands), "hosted regularly");
+	});
+
+	it("never exposes the count itself", () => {
+		for (let n = 1; n <= 40; n++) {
+			assert.doesNotMatch(hostedLabel(n, bands), /\d/, `band for ${n} leaks a number`);
+		}
+	});
+
+	it("works with a single catch-all band", () => {
+		assert.equal(hostedLabel(5, [{ from: 1, text: "hosted" }]), "hosted");
+	});
+});
 
 describe("assignRanks", () => {
 	const player = (id, scoreNum, extra = {}) => ({

@@ -56,7 +56,7 @@ export function validateConfig(c) {
 	}
 
 	const strings = ["scoreLabel", "provisionalLegend", "hostLabel", "hostSeparator",
-		"hostPlayingNote", "hostedCountLabel", "quizmasterLabel", "playersNote", "updatedLabel"];
+		"hostPlayingNote", "quizmasterLabel", "playersNote", "updatedLabel"];
 	for (const key of strings) {
 		if (!isText(c[key])) fail(key, "must be a non-empty string");
 	}
@@ -64,6 +64,21 @@ export function validateConfig(c) {
 	if (!Array.isArray(c.quizmasterIds) || !c.quizmasterIds.every((id) => isInt(id, 0))) {
 		fail("quizmasterIds", "must be an array of sheet ID numbers");
 	}
+
+	if (!Array.isArray(c.hostedBands) || c.hostedBands.length === 0) {
+		fail("hostedBands", "must be a non-empty array, lowest band first");
+	}
+	let floor = 0;
+	for (const [i, band] of c.hostedBands.entries()) {
+		if (!isInt(band?.from, 1) || !isText(band?.text)) {
+			fail(`hostedBands[${i}]`, "must have a whole-number from of 1 or more and non-empty text");
+		}
+		if (band.from <= floor) fail(`hostedBands[${i}].from`, "must be higher than the band before it");
+		floor = band.from;
+	}
+	// Otherwise a host who has hosted once falls through every band and is listed
+	// in the hosts view with nothing said about them.
+	if (c.hostedBands[0].from !== 1) fail("hostedBands[0].from", "must be 1, so every host is covered");
 
 	if (c.attendance === null || typeof c.attendance !== "object") {
 		fail("attendance", "must be an object");
@@ -220,6 +235,19 @@ export function parseRows(text, config, onWarn = console.warn) {
 
 	assignRanks(rows);
 	return rows;
+}
+
+/**
+ * How much someone has hosted, in words: the highest band they reach. Bands are
+ * ordered lowest first and the first covers 1, so any host gets a phrase.
+ * Returns null for someone who has never hosted.
+ */
+export function hostedLabel(hosted, bands) {
+	let label = null;
+	for (const band of bands) {
+		if (hosted >= band.from) label = band.text;
+	}
+	return label;
 }
 
 /** Competition ranking (1, 2, 2, 4) over scored Ranked rows, hosts included. */

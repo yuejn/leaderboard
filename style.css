@@ -193,7 +193,7 @@ col:nth-child(1) { inline-size: 6ch; }  /* rank      */
 col:nth-child(2) { inline-size: 11ch; } /* initials  */
 col:nth-child(3) { inline-size: 21ch; } /* country   */
 col:nth-child(4) { inline-size: 15ch; } /* score     */
-col:nth-child(5) { inline-size: 26ch; } /* status — fits "Provisional · hosted 12" */
+col:nth-child(5) { inline-size: 35ch; } /* status — fits "Provisional · hosted a few times" */
 
 thead th {
 	padding: 2px 18px 6px 0;
