@@ -13,6 +13,9 @@ backend — the browser fetches the CSV on every page load.
 | `leaderboard.js` | Pure data layer — CSV parsing, ranking, filtering, sorting. No DOM |
 | `app.js` | DOM layer — fetching, rendering, controls, loading/error states |
 | `config.json` | **Every tunable value.** Edit this, not the code |
+| `test.mjs` | Tests for the data layer — `node --test` |
+| `package.json` | Marks the directory as ES modules for Node. No dependencies |
+| `robots.txt` | Asks crawlers to stay away — see *Being findable* |
 | `.nojekyll` | Stops GitHub Pages running the files through Jekyll |
 
 ## Changing things
@@ -243,6 +246,33 @@ is deleted. To reissue one:
 The sheet must stay published for the page to work. If it isn't, the page says
 so rather than showing a blank table. There is no cached fallback: if the sheet
 is unreachable, the page shows an error and a retry link. That is deliberate.
+
+## Being findable (or not)
+
+The page asks not to be indexed — `<meta name="robots" content="noindex,
+nofollow, noarchive">` plus a `robots.txt` that disallows everything. Search
+engines that respect those (Google, Bing, DuckDuckGo do) will keep it out of
+results, so it won't turn up when someone searches a name on it.
+
+**This is not privacy, and it should not be relied on as any.** Anyone with the
+URL can open the page — there is no login and no way to add one on GitHub Pages.
+Specifically:
+
+- A **GitHub Pages site is public even when the repository is private.** Access
+  control for Pages is a GitHub Enterprise feature.
+- The repository, if public, exposes `config.json` — and with it the sheet's
+  CSV URL, which serves the whole sheet to anyone who asks.
+- The published sheet is public to anyone with *its* link too, independently of
+  this site.
+- Crawlers that ignore `robots.txt`, and anything that scrapes links out of
+  chat apps or email, are unaffected.
+
+If the standings genuinely shouldn't be readable by strangers, the site being
+hard to find is the wrong tool: either keep it off Pages and share the file some
+other way, or put it behind something that can actually authenticate (Cloudflare
+Access, Netlify password protection, a private host). Given the content is
+initials and win rates, "unindexed and unlisted" may well be enough — that is a
+judgement call, and it should be a deliberate one.
 
 ## Deploying
 
