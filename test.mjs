@@ -44,7 +44,7 @@ const config = (overrides = {}) => ({
 		{ from: 1, text: "hosted once" },
 		{ from: 2, text: "hosted twice" },
 		{ from: 3, text: "hosted a few times" },
-		{ from: 8, text: "hosted regularly" },
+		{ from: 8, text: "hosts regularly" },
 	],
 	quizmasterIds: [26],
 	quizmasterLabel: "quiz master",
@@ -343,13 +343,13 @@ describe("hostedLabel", () => {
 		assert.equal(hostedLabel(1, bands), "hosted once");
 		assert.equal(hostedLabel(2, bands), "hosted twice");
 		assert.equal(hostedLabel(3, bands), "hosted a few times");
-		assert.equal(hostedLabel(8, bands), "hosted regularly");
+		assert.equal(hostedLabel(8, bands), "hosts regularly");
 	});
 
 	it("holds a band until the next one starts", () => {
 		assert.equal(hostedLabel(7, bands), "hosted a few times");
-		assert.equal(hostedLabel(9, bands), "hosted regularly");
-		assert.equal(hostedLabel(100, bands), "hosted regularly");
+		assert.equal(hostedLabel(9, bands), "hosts regularly");
+		assert.equal(hostedLabel(100, bands), "hosts regularly");
 	});
 
 	it("never exposes the count itself", () => {

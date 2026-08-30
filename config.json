@@ -15,7 +15,7 @@
     { "from": 1, "text": "hosted once" },
     { "from": 2, "text": "hosted twice" },
     { "from": 3, "text": "hosted a few times" },
-    { "from": 8, "text": "hosted regularly" }
+    { "from": 8, "text": "hosts regularly" }
   ],
   "quizmasterIds": [26],
   "quizmasterLabel": "quiz master",

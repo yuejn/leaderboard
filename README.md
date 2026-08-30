@@ -156,8 +156,11 @@ So the two can disagree, deliberately: someone who hosted once appears in the
 hosts list but is *not* greyed, tooltipped or labelled `· host` in the
 standings. To keep the roster readable, the status cell in that view replaces
 the `· host` suffix with how much that person hosts — `ranked · hosted twice`,
-`quiz master · hosted regularly` — since in a list of nothing but hosts the
+`provisional · hosts regularly` — since in a list of nothing but hosts the
 word `host` is noise.
+
+Quizmasters are exempt and stay plain `quiz master`: running the quiz is the
+whole role, so how much they host as well goes without saying.
 
 It says so **in words, not a tally**. Roughly how much of a fixture someone is
 is the useful thing; an exact count invites arithmetic these numbers aren't
@@ -168,7 +171,7 @@ meant to carry. The wording and the cut-offs are `hostedBands`:
   { "from": 1, "text": "hosted once" },
   { "from": 2, "text": "hosted twice" },
   { "from": 3, "text": "hosted a few times" },
-  { "from": 8, "text": "hosted regularly" }
+  { "from": 8, "text": "hosts regularly" }
 ]
 ```
 

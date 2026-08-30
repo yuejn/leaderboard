@@ -371,10 +371,11 @@ function renderRows(pageRows) {
  * it, since in a list of nothing but hosts the word is noise.
  */
 function statusIn(row) {
-	if (state.show !== "hosts" || row.hosted === 0) return row.statusText;
+	// A quizmaster is exempt: running the quiz is the whole role, so saying how
+	// much they host as well is stating the obvious twice.
+	if (state.show !== "hosts" || row.hosted === 0 || row.isQuizmaster) return row.statusText;
 
-	const label = row.isQuizmaster ? cfg.quizmasterLabel : row.status || "—";
-	return `${label}${cfg.hostSeparator}${hostedLabel(row.hosted, cfg.hostedBands)}`;
+	return `${row.status || "—"}${cfg.hostSeparator}${hostedLabel(row.hosted, cfg.hostedBands)}`;
 }
 
 const attendanceMark = ({ attendance }) =>
