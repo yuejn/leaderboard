@@ -289,8 +289,24 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
+## Running the tests
+
+`leaderboard.js` is pure — no DOM, no network — so it runs straight under
+Node's own test runner. No dependencies, nothing to install:
+
+```sh
+node --test    # or: npm test
+```
+
+`test.mjs` covers CSV parsing (quotes, escapes, CRLF), config validation,
+row parsing, ranking, filtering, sorting, pagination and the stats. The DOM
+layer in `app.js` is not covered.
+
+`package.json` exists only to mark the directory as ES modules for Node — there
+are no dependencies and no build step, and GitHub Pages ignores it.
+
 ## Browser support
 
-Uses `light-dark()`, container queries, CSS nesting, ES modules and
-`Array.prototype.toSorted` — all available in current Chrome, Safari, Firefox
-and Edge. Colours follow the reader's light/dark preference automatically.
+Uses `light-dark()`, container queries, CSS nesting and ES modules — all
+available in current Chrome, Safari, Firefox and Edge. Colours follow the
+reader's light/dark preference automatically.
