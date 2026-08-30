@@ -273,7 +273,9 @@ function render() {
 	renderPins();
 	renderStats(view);
 
-	el.pager.hidden = !view.paged;
+	// A single-page pager is two disabled buttons and a "page 1/1" — nothing to
+	// operate, so it isn't shown.
+	el.pager.hidden = !view.paged || view.pages === 1;
 	el.prev.disabled = view.page <= 1;
 	el.next.disabled = view.page >= view.pages;
 	el.pagerStatus.textContent = `page ${view.page}/${view.pages}`;

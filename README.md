@@ -86,6 +86,10 @@ scroll and `mobilePageSize` kicks in; above it the whole table fits on screen an
 `pageSize` is `0`, so every row is shown and the pager is hidden. Resizing across
 the breakpoint re-renders and returns to page 1.
 
+The pager also stays hidden whenever everything fits on one page — a filter that
+matches three people doesn't need `« prev  page 1/1  next »` with both buttons
+greyed out.
+
 If the sheet grows past a few hundred entries, set `pageSize` to a number and the
 wide layout starts paging too.
 
