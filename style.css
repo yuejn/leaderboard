@@ -87,6 +87,25 @@ input[type="search"] {
 	border-block-end: 1px solid var(--rule);
 	padding-block: 2px;
 	min-inline-size: 12rem;
+
+	/* Ours is next to the field and is a real target on touch; the native one
+	   appears only in some browsers and can't be sized. One control, everywhere. */
+	&::-webkit-search-cancel-button {
+		-webkit-appearance: none;
+		appearance: none;
+	}
+}
+
+#clear-filter {
+	margin-inline-start: 0.5ch;
+	color: var(--muted);
+	/* Comfortably tappable without pushing the control row taller than its text. */
+	padding: 4px 8px;
+	margin-block: -4px;
+
+	&:hover {
+		color: var(--fg);
+	}
 }
 
 select {
@@ -383,5 +402,12 @@ tr.host-note {
 	.pager button {
 		min-block-size: 44px;
 		padding-block: 6px;
+	}
+
+	/* The one control you reach for most on a phone, so give it a real target. */
+	#clear-filter {
+		min-inline-size: 44px;
+		min-block-size: 44px;
+		text-align: center;
 	}
 }

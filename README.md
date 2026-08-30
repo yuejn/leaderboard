@@ -144,6 +144,14 @@ still means "rows matching this view".
 Pins are keyed on the sheet's `ID`, so reusing an ID for a different person
 inherits their pins.
 
+### The filter box
+
+`filter:` matches on initials and country as you type. The `×` beside it clears
+the field and puts the cursor back in it — on a phone the alternative is
+selecting the text and hunting for backspace. The browser's own clear button
+inside search fields is suppressed, because it isn't in every browser and can't
+be made a 44px touch target; this one is, on narrow layouts.
+
 ### Country links
 
 Every country is a filter link. Dual entries split into separate links, so

@@ -25,7 +25,7 @@ const isNarrow = () => board.clientWidth < NARROW_WIDTH;
 
 const el = Object.fromEntries(
 	[
-		"meta", "message", "controls", "filter", "show", "legend", "table", "thead",
+		"meta", "message", "controls", "filter", "clear-filter", "show", "legend", "table", "thead",
 		"tbody", "hint", "pager", "prev", "next", "pager-status", "count", "sort-select",
 		"pins", "stats", "stats-summary", "histogram", "stats-countries", "stats-note",
 	].map((id) => [id.replace(/-(\w)/g, (_, c) => c.toUpperCase()), document.getElementById(id)]),
@@ -346,8 +346,17 @@ function buildControls() {
 	el.prev.addEventListener("click", () => goToPage(state.page - 1));
 	el.next.addEventListener("click", () => goToPage(state.page + 1));
 
+	// Clearing a filter on a phone otherwise means selecting the text and finding
+	// backspace; the native search field's own clear button isn't in every
+	// browser and can't be made a 44px target.
+	el.clearFilter.addEventListener("click", () => {
+		setQuery("");
+		el.filter.focus();
+	});
+
 	let debounce;
 	el.filter.addEventListener("input", () => {
+		el.clearFilter.hidden = el.filter.value === "";
 		clearTimeout(debounce);
 		debounce = setTimeout(() => {
 			state.query = el.filter.value;
