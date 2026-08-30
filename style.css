@@ -15,6 +15,14 @@
 	box-sizing: border-box;
 }
 
+/* The script hides things with the `hidden` attribute, but any author `display`
+   outranks the UA's `[hidden] { display: none }` — and `.controls`, `.pager` and
+   the narrow layout's `table` all set one. Without this, `hidden` is a no-op on
+   exactly the elements that rely on it. */
+[hidden] {
+	display: none !important;
+}
+
 body {
 	margin: 0;
 	padding-block: 2rem 4rem;
