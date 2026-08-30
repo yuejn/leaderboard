@@ -51,6 +51,12 @@ the breakpoint re-renders and returns to page 1.
 If the sheet grows past a few hundred entries, set `pageSize` to a number and the
 wide layout starts paging too.
 
+The 520px breakpoint is written down **once**, in `style.css`. A container query
+can't read a custom property in its condition and can't match the container
+itself, so the query sets `--narrow: 1` on a zero-height `#width-probe` element
+and the script reads that back to find out which layout is live. If you move the
+breakpoint, move it there and nothing else needs to change.
+
 > The `520` breakpoint lives in two places that must agree: the `@container`
 > rule in `style.css` and `NARROW_WIDTH` in `app.js`.
 

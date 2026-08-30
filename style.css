@@ -30,6 +30,15 @@ main {
 	margin-inline: auto;
 }
 
+/* The script needs to know which layout is live — pagination differs between
+   them — and a container query can neither read a custom property in its
+   condition nor match the container itself. So the query sets a flag on a probe
+   element and the script reads that back, leaving 520px written down once. */
+#width-probe {
+	block-size: 0;
+	--narrow: 0;
+}
+
 h1 {
 	margin-block: 0 0.5rem;
 	font-size: 16px;
@@ -334,6 +343,10 @@ tr.host-note {
 }
 
 @container board (width < 520px) {
+	#width-probe {
+		--narrow: 1;
+	}
+
 	.sort-mobile {
 		display: block;
 	}

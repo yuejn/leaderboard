@@ -16,12 +16,15 @@ const CONFIG_URL = "./config.json";
 const FILTER_DEBOUNCE_MS = 150;
 const FETCH_TIMEOUT_MS = 15_000;
 const PINS_KEY = "leaderboard:pins";
-
-/** Must match the `@container board (width < …)` breakpoint in style.css. */
-const NARROW_WIDTH = 520;
+const MAX_BAR = 24;
 
 const board = document.querySelector("main");
-const isNarrow = () => board.clientWidth < NARROW_WIDTH;
+
+// The narrow breakpoint lives in style.css alone; the probe reports whether the
+// container query is currently matching. An unloaded stylesheet reads as wide,
+// which is the layout the markup already is.
+const probe = document.getElementById("width-probe");
+const isNarrow = () => getComputedStyle(probe).getPropertyValue("--narrow").trim() === "1";
 
 const el = Object.fromEntries(
 	[
