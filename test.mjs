@@ -525,6 +525,23 @@ describe("selectRows", () => {
 		assert.equal(view.pinnedExtra, 0);
 	});
 
+	it("counts the search matches the show bucket holds back", () => {
+		// Both U.K. players match the search; only G.H. has hosted.
+		const view = select({ show: "hosts", query: "u.k." });
+		assert.deepEqual(initialsOf(view.rows), ["G.H."]);
+		assert.equal(view.outsideView, 1);
+
+		assert.equal(select({ show: "all", query: "u.k." }).outsideView, 0, "'all' holds nobody back");
+		assert.equal(select({ show: "hosts" }).outsideView, 2, "unsearched, the bucket alone holds two");
+	});
+
+	it("does not count an off-bucket pin as held back, since it is on screen", () => {
+		const view = select({ show: "hosts", query: "u.k.", pinned: new Set([1]) });
+		assert.deepEqual(initialsOf(view.rows), ["A.B.", "G.H."]);
+		assert.equal(view.pinnedExtra, 1);
+		assert.equal(view.outsideView, 0);
+	});
+
 	it("returns every row unpaged when pageSize is 0", () => {
 		const view = select({ show: "all" }, 0);
 		assert.equal(view.paged, false);

@@ -233,6 +233,12 @@ selecting the text and hunting for backspace. The browser's own clear button
 inside search fields is suppressed, because it isn't in every browser and can't
 be made a 44px touch target; this one is, on narrow layouts.
 
+With a filter running, the count line also names the matches the `show:` bucket
+is holding back (`showing 1 of 65 · 4 more outside hosts`). Both narrowings are
+folded into one number otherwise, so a country with five players looked like it
+had one. If the bucket holds back *every* match, the hint below the table says
+so instead, and offers `all` as a way out.
+
 ### Country links
 
 Every country is a filter link. Dual entries split into separate links, so

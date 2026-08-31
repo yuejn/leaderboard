@@ -322,6 +322,10 @@ export function selectRows(rows, state, { pageSize }) {
 		matching, // bucket matches only — what `total` and the stats describe
 		total: matching.length,
 		pinnedExtra: offBucket.length,
+		// People the search found that the bucket then hid. With both narrowings
+		// active the headline count can't say how much of the shortfall is the
+		// filter and how much is the bucket, so this names the second half.
+		outsideView: searched.length - matching.length - offBucket.length,
 		query,
 	};
 

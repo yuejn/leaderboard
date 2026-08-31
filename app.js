@@ -284,11 +284,22 @@ function render() {
 	// Off-bucket pins are named separately rather than folded into the total, so
 	// the headline number still means "rows that match the current view".
 	const pins = view.pinnedExtra > 0 ? ` · ${view.pinnedExtra} pinned` : "";
+
+	// With a filter running, the totals are measured against every row, so a
+	// bucket that hides some of the matches reads as though they don't exist —
+	// "1 of 65" for a country with five players. Say how many the bucket holds
+	// back. Without a filter the shortfall is the whole point of the bucket, so
+	// there's nothing to explain; with nothing left to show, the hint below says
+	// the same thing and offers a way out of the bucket.
+	const held = view.query !== "" && view.total > 0 && view.outsideView > 0
+		? ` · ${view.outsideView} more outside ${state.show}`
+		: "";
+
 	el.count.textContent = view.paged
-		? `(showing ${view.rows.length} of ${view.total}${pins})`
+		? `(showing ${view.rows.length} of ${view.total}${pins}${held})`
 		: view.total === rows.length && view.pinnedExtra === 0
 			? ""
-			: `(showing ${view.total} of ${rows.length}${pins})`;
+			: `(showing ${view.total} of ${rows.length}${pins}${held})`;
 
 	for (const button of el.show.children) {
 		button.setAttribute("aria-pressed", String(button.value === state.show));
